@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Word Sniper English</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Fredoka:wght@500;600;700&display=swap');
+
+  :root{
+    --navy:#1B2340; --navy2:#262F55; --navy3:#323C6B;
+    --mustard:#F2B705; --mustard-deep:#C98F02; --coral:#FF5D5D;
+    --cream:#FFF8ED; --teal:#2FA88F; --ink:#1B2340;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{font-family:'Zen Kaku Gothic New', sans-serif;background:var(--cream);color:var(--ink);min-height:100vh;}
+  .heading{font-family:'Zen Maru Gothic', sans-serif;}
+  #app{max-width:1000px;margin:0 auto;padding:18px 18px 60px;}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px;}
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand-mark{width:36px;height:36px;border-radius:50%;
+    background:radial-gradient(circle at center, var(--cream) 0 20%, var(--coral) 21% 34%, var(--cream) 35% 48%, var(--navy) 49% 100%);
+    flex:0 0 auto;}
+  .brand-name{font-family:'Fredoka',sans-serif;font-weight:700;font-size:1.3rem;letter-spacing:.01em;}
+  .role-switch{display:flex;gap:6px;background:#EFE6D3;padding:4px;border-radius:999px;}
+  .role-switch button{border:none;background:transparent;padding:8px 16px;border-radius:999px;
+    font-family:'Zen Kaku Gothic New',sans-serif;font-weight:700;font-size:.88rem;color:var(--navy);cursor:pointer;
+    transition:background .15s, color .15s;}
+  .role-switch button.active{background:var(--navy);color:var(--cream);}
+
+  .view{display:none;} .view.visible{display:block;}
+
+  #host-view{background:var(--navy);border-radius:20px;padding:28px 24px 32px;color:var(--cream);}
+  .host-top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:8px;}
+  .host-title{font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:1.05rem;opacity:.75;letter-spacing:.04em;}
+  .host-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  .btn{font-family:'Zen Kaku Gothic New',sans-serif;font-weight:700;font-size:.95rem;border:none;border-radius:12px;
+    padding:12px 20px;cursor:pointer;transition:transform .1s ease;}
+  .btn:active{transform:scale(.96);}
+  .btn:disabled{opacity:.4;cursor:default;}
+  .btn-primary{background:var(--mustard);color:var(--navy);}
+  .btn-primary:hover{background:var(--mustard-deep);}
+  .btn-ghost{background:transparent;color:var(--cream);border:1.5px solid rgba(255,248,237,.35);}
+  .btn-ghost:hover{border-color:var(--coral);color:var(--coral);}
+  .btn-danger{background:transparent;color:var(--coral);border:1.5px solid rgba(255,93,93,.5);}
+  .btn-danger:hover{background:rgba(255,93,93,.12);}
+
+  .level-switch{display:flex;gap:4px;align-items:center;background:rgba(255,248,237,.1);padding:4px 4px 4px 12px;border-radius:999px;}
+  .level-switch .label{font-size:.75rem;opacity:.6;font-weight:700;margin-right:4px;}
+  .level-switch button{border:none;background:transparent;color:var(--cream);padding:8px 14px;border-radius:999px;
+    font-family:'Zen Kaku Gothic New',sans-serif;font-weight:700;font-size:.82rem;cursor:pointer;}
+  .level-switch button.active{background:var(--cream);color:var(--navy);}
+
+  .room-panel{background:var(--navy2);border-radius:14px;padding:14px 16px;margin-bottom:18px;font-size:.86rem;}
+  .room-now{font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .room-forget{margin-left:auto;background:transparent;border:1px solid rgba(255,248,237,.3);color:var(--cream);
+    border-radius:8px;padding:5px 10px;font-size:.72rem;font-family:'Zen Kaku Gothic New',sans-serif;
+    cursor:pointer;opacity:.7;}
+  .room-forget:hover{opacity:1;border-color:var(--coral);color:var(--coral);}
+  .room-now b{color:var(--mustard);font-family:'Zen Maru Gothic',sans-serif;font-size:1.05rem;}
+  .room-warn{display:none;background:rgba(255,93,93,.14);border:1px solid rgba(255,93,93,.5);
+    border-radius:10px;padding:10px 12px;margin-bottom:10px;line-height:1.7;color:#FFD9D9;}
+  .room-maker{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .room-panel input{font-family:'Zen Kaku Gothic New',sans-serif;font-size:.9rem;padding:10px 12px;
+    border-radius:10px;border:1.5px solid rgba(255,248,237,.25);background:rgba(255,248,237,.06);color:var(--cream);}
+  .room-panel input:focus{outline:none;border-color:var(--mustard);}
+  .room-out-row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+  .room-out-row input{flex:1 1 260px;min-width:0;}
+  .room-copied{display:none;color:var(--teal);font-weight:700;margin-top:8px;font-size:.82rem;}
+  .room-copied.show{display:block;}
+
+  .stage{display:flex;flex-direction:column;align-items:center;padding:18px 0 26px;}
+  .topic-pill{background:var(--mustard);color:var(--navy);padding:10px 30px 12px;border-radius:24px;margin-bottom:20px;
+    display:flex;flex-direction:column;align-items:center;}
+  .topic-en{font-family:'Fredoka',sans-serif;font-weight:600;font-size:clamp(1.3rem,4.6vw,2.1rem);line-height:1.15;letter-spacing:.01em;}
+  .topic-ja{font-family:'Zen Maru Gothic',sans-serif;font-weight:700;font-size:.82rem;opacity:.7;margin-top:2px;}
+
+  .target-wrap{position:relative;display:inline-flex;flex-direction:column;align-items:center;}
+  .point-badge{position:absolute;top:-8px;right:-8px;background:var(--coral);color:#fff;
+    font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:.72rem;padding:3px 9px;border-radius:999px;
+    box-shadow:0 2px 6px rgba(0,0,0,.3);}
+  .group-note{font-size:.72rem;font-weight:700;opacity:.6;margin-top:8px;}
+
+  .letter-en{font-family:'Fredoka',sans-serif;font-weight:600;color:var(--cream);
+    display:flex;align-items:baseline;line-height:1;gap:.04em;}
+  .letter-en i{font-style:normal;font-weight:500;font-size:.6em;opacity:.72;}
+
+  .target{width:min(46vw,220px);height:min(46vw,220px);border-radius:50%;
+    background:radial-gradient(circle at center,var(--navy) 0 30%,var(--cream) 31% 42%,var(--coral) 43% 54%,var(--cream) 55% 66%,var(--navy) 67% 100%);
+    display:flex;align-items:center;justify-content:center;position:relative;}
+  .target .letter-en{font-size:min(12vw,60px);}
+  .target.small{width:min(24vw,110px);height:min(24vw,110px);}
+  .target.small .letter-en{font-size:min(7vw,32px);}
+  .letters-row{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;align-items:flex-start;}
+  .letters-hint{font-family:'Zen Kaku Gothic New',sans-serif;font-size:.85rem;opacity:.6;text-align:center;margin-bottom:10px;}
+  .waiting-msg{font-family:'Zen Maru Gothic',sans-serif;font-weight:700;font-size:1.15rem;text-align:center;padding:40px 10px;opacity:.85;line-height:1.8;}
+
+  .target-pill{min-width:150px;max-width:92vw;padding:0 26px;height:min(46vw,92px);border-radius:999px;
+    background:var(--navy);border:3px solid var(--coral);
+    display:flex;align-items:center;justify-content:center;}
+  .target-pill .letter-en{font-size:min(6vw,30px);letter-spacing:.16em;gap:.16em;}
+  .target-pill.small{min-width:110px;height:min(24vw,62px);padding:0 16px;}
+  .target-pill.small .letter-en{font-size:min(4vw,17px);letter-spacing:.1em;gap:.1em;}
+
+  .speak-btn{margin-top:16px;background:transparent;border:1.5px solid rgba(255,248,237,.35);color:var(--cream);
+    border-radius:999px;padding:9px 20px;font-family:'Zen Kaku Gothic New',sans-serif;font-weight:700;font-size:.85rem;cursor:pointer;}
+  .speak-btn:hover{border-color:var(--mustard);color:var(--mustard);}
+  .speak-btn:active{transform:scale(.96);}
+
+  .board{background:var(--navy2);border-radius:16px;padding:16px 18px 20px;margin-top:6px;}
+  .board h3{font-family:'Zen Maru Gothic',sans-serif;font-size:.95rem;margin:0 0 12px;opacity:.8;letter-spacing:.03em;}
+  .rank-row{display:flex;align-items:center;gap:12px;background:var(--navy3);border-radius:12px;padding:10px 14px;margin-bottom:8px;}
+  .rank-row.r1{background:linear-gradient(90deg, rgba(242,183,5,.35), var(--navy3));}
+  .rank-badge{width:32px;height:32px;border-radius:50%;flex:0 0 auto;display:flex;align-items:center;justify-content:center;
+    font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:.95rem;background:rgba(255,248,237,.12);}
+  .rank-row.r1 .rank-badge{background:var(--mustard);color:var(--navy);}
+  .rank-row.r2 .rank-badge{background:#D8D8D8;color:var(--navy);}
+  .rank-row.r3 .rank-badge{background:#E3A470;color:var(--navy);}
+  .rank-name{font-weight:700;flex:0 0 auto;min-width:70px;}
+  .rank-word{opacity:.95;flex:1 1 auto;font-family:'Fredoka',sans-serif;font-weight:500;font-size:1.05rem;}
+  .rank-time{font-variant-numeric:tabular-nums;opacity:.65;font-size:.85rem;flex:0 0 auto;}
+  .rank-points{font-family:'Zen Maru Gothic',sans-serif;font-weight:900;color:var(--mustard);font-size:.9rem;flex:0 0 auto;}
+  .rank-action{flex:0 0 auto;background:transparent;border:1px solid rgba(255,248,237,.35);color:var(--cream);
+    font-size:.75rem;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:'Zen Kaku Gothic New',sans-serif;}
+  .rank-action:hover{border-color:var(--coral);color:var(--coral);}
+  .rank-action.speak{padding:5px 10px;font-size:.9rem;line-height:1;}
+  .rank-action.speak:hover{border-color:var(--mustard);color:var(--mustard);}
+
+  .invalid-row{display:flex;align-items:center;gap:10px;background:rgba(242,183,5,.08);border-radius:12px;
+    padding:8px 14px;margin-bottom:8px;font-size:.88rem;opacity:.75;}
+  .invalid-row .tag{color:var(--mustard);font-size:.78rem;}
+  .invalid-row .rank-action{margin-left:auto;}
+
+  .wrong-row{display:flex;align-items:center;gap:10px;padding:7px 14px;opacity:.55;font-size:.88rem;}
+  .wrong-row span.x{color:var(--coral);}
+  .empty-note{opacity:.55;font-size:.9rem;padding:6px 4px;}
+
+  .score-strip{margin-top:16px;display:flex;flex-wrap:wrap;gap:8px;}
+  .score-chip{background:var(--navy3);border-radius:999px;padding:6px 14px;font-size:.85rem;display:flex;gap:6px;align-items:center;}
+  .score-chip b{font-family:'Zen Maru Gothic',sans-serif;color:var(--mustard);}
+  .score-chip.provisional{opacity:.65;border:1px dashed rgba(242,183,5,.6);}
+
+  .final-block{text-align:center;padding:10px 0 8px;}
+  .final-title{font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:1.6rem;margin-bottom:18px;}
+  .final-row{display:flex;align-items:center;gap:14px;background:var(--navy3);border-radius:14px;padding:14px 18px;margin-bottom:10px;
+    max-width:420px;margin-left:auto;margin-right:auto;text-align:left;}
+  .final-row.r1{background:linear-gradient(90deg, rgba(242,183,5,.4), var(--navy3));}
+  .final-badge{width:38px;height:38px;border-radius:50%;flex:0 0 auto;display:flex;align-items:center;justify-content:center;
+    font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:1.05rem;background:rgba(255,248,237,.12);}
+  .final-row.r1 .final-badge{background:var(--mustard);color:var(--navy);}
+  .final-row.r2 .final-badge{background:#D8D8D8;color:var(--navy);}
+  .final-row.r3 .final-badge{background:#E3A470;color:var(--navy);}
+  .final-name{font-weight:700;flex:1 1 auto;}
+  .final-points{font-family:'Zen Maru Gothic',sans-serif;font-weight:900;color:var(--mustard);}
+
+  #player-view{background:#fff;border:1.5px solid #EFE6D3;border-radius:20px;padding:26px 22px;max-width:460px;margin:0 auto;}
+  .name-step label{display:block;font-weight:700;margin-bottom:8px;}
+  .name-step input{width:100%;font-size:1.05rem;padding:12px 14px;border-radius:12px;border:1.5px solid #E4D9C2;
+    font-family:inherit;margin-bottom:12px;}
+  .name-step input:focus{outline:none;border-color:var(--mustard-deep);}
+
+  .p-topic{color:var(--navy);text-align:center;background:#FBF1DC;border-radius:20px;padding:10px 24px 12px;
+    display:inline-flex;flex-direction:column;align-items:center;margin-bottom:16px;}
+  .p-topic .topic-en{font-size:clamp(1.15rem,5.4vw,1.6rem);}
+  .p-target-wrap{display:flex;justify-content:center;margin-bottom:6px;}
+  .p-target{width:112px;height:112px;border-radius:50%;
+    background:radial-gradient(circle at center,var(--navy) 0 32%,var(--cream) 33% 44%,var(--coral) 45% 56%,var(--cream) 57% 68%,var(--navy) 69% 100%);
+    display:flex;align-items:center;justify-content:center;position:relative;}
+  .p-target .letter-en{font-size:2.2rem;}
+  .p-target.small{width:76px;height:76px;}
+  .p-target.small .letter-en{font-size:1.45rem;}
+  .p-letters-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;align-items:flex-start;}
+
+  .p-target-pill{min-width:120px;padding:0 18px;height:76px;border-radius:999px;
+    background:var(--navy);border:3px solid var(--coral);
+    display:flex;align-items:center;justify-content:center;}
+  .p-target-pill .letter-en{font-size:1.15rem;letter-spacing:.14em;gap:.14em;}
+  .p-target-pill.small{min-width:92px;height:60px;padding:0 12px;}
+  .p-target-pill.small .letter-en{font-size:.85rem;letter-spacing:.08em;gap:.08em;}
+
+  .p-speak-btn{display:block;margin:12px auto 16px;background:transparent;border:1.5px solid #E4D9C2;color:var(--navy);
+    border-radius:999px;padding:8px 18px;font-family:'Zen Kaku Gothic New',sans-serif;font-weight:700;font-size:.85rem;cursor:pointer;}
+  .p-speak-btn:hover{border-color:var(--mustard-deep);}
+  .p-speak-btn:active{transform:scale(.96);}
+
+  .mic-btn{display:block;width:150px;height:150px;border-radius:50%;margin:6px auto 0;border:none;cursor:pointer;
+    background:var(--coral);color:#fff;font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:1.05rem;
+    line-height:1.5;box-shadow:0 6px 18px rgba(255,93,93,.35);transition:transform .1s;}
+  .mic-btn:active{transform:scale(.95);}
+  .mic-btn:disabled{opacity:.45;cursor:default;box-shadow:none;}
+  .mic-btn .icon{display:block;font-size:2.4rem;line-height:1.1;}
+  .mic-btn.recording{background:var(--navy);animation:pulse 1s infinite;}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(27,35,64,.45);}50%{box-shadow:0 0 0 16px rgba(27,35,64,0);}}
+  .mic-reason{margin-top:8px;font-size:.75rem;opacity:.75;line-height:1.6;}
+  .mic-retry{margin-top:10px;background:var(--navy);color:var(--cream);border:none;border-radius:10px;
+    padding:9px 16px;font-family:'Zen Kaku Gothic New',sans-serif;font-weight:700;font-size:.8rem;cursor:pointer;}
+  .mic-retry:disabled{opacity:.5;}
+  .mic-note{text-align:center;font-size:.82rem;opacity:.6;margin-top:12px;line-height:1.7;}
+  .mic-fallback{background:#FBF1DC;border-radius:10px;padding:10px 12px;font-size:.8rem;
+    line-height:1.7;margin-bottom:12px;color:var(--navy);}
+
+  .judge-btn{flex:0 0 auto;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:.85rem;font-weight:700;
+    font-family:'Zen Kaku Gothic New',sans-serif;background:transparent;border:1px solid rgba(255,248,237,.35);color:var(--cream);}
+  .judge-btn.ok.on{background:var(--teal);border-color:var(--teal);color:#fff;}
+  .judge-btn.ng.on{background:var(--coral);border-color:var(--coral);color:#fff;}
+  .rank-row.unjudged{opacity:.75;}
+  .no-audio{font-size:.78rem;opacity:.5;flex:0 0 auto;}
+  .judge-hint{font-size:.82rem;color:var(--mustard);margin-bottom:10px;}
+
+  .p-input-row{display:flex;gap:8px;}
+  .p-input-row input{flex:1 1 auto;font-size:1.15rem;padding:13px 14px;border-radius:12px;border:1.5px solid #E4D9C2;
+    font-family:'Fredoka',sans-serif;font-weight:500;}
+  .p-input-row input:focus{outline:none;border-color:var(--mustard-deep);}
+  .p-submit{background:var(--navy);color:var(--cream);border-radius:12px;padding:0 20px;font-weight:700;border:none;
+    cursor:pointer;font-family:'Zen Kaku Gothic New',sans-serif;}
+  .p-submit:active{transform:scale(.96);} .p-submit:disabled{opacity:.4;cursor:default;}
+  .p-kanji-warning{font-size:.8rem;color:var(--coral);margin-top:6px;text-align:center;display:none;}
+  .p-kanji-warning.show{display:block;}
+
+  .status-card{margin-top:18px;border-radius:14px;padding:18px;text-align:center;}
+  .status-card.correct{background:rgba(47,168,143,.12);border:1.5px solid var(--teal);}
+  .status-card.wrong{background:rgba(255,93,93,.1);border:1.5px solid var(--coral);}
+  .status-card.invalid{background:rgba(242,183,5,.12);border:1.5px solid var(--mustard-deep);}
+  .status-word{font-weight:700;font-size:1.05rem;margin-bottom:6px;}
+  .status-word em{font-style:normal;font-family:'Fredoka',sans-serif;font-weight:600;font-size:1.2rem;}
+  .status-rank{font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:2.2rem;color:var(--navy);}
+  .status-sub{font-size:.85rem;opacity:.65;margin-top:4px;}
+  .p-waiting{text-align:center;padding:40px 10px;opacity:.7;font-weight:700;line-height:1.8;}
+
+  .footnote{font-size:.78rem;opacity:.5;text-align:center;margin-top:22px;line-height:1.7;}
+
+  .modal-overlay{position:fixed;inset:0;background:rgba(27,35,64,.6);display:none;align-items:center;justify-content:center;
+    z-index:1000;padding:20px;}
+  .modal-overlay.show{display:flex;}
+  .modal-box{background:#fff;border-radius:16px;padding:24px 22px;max-width:320px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,.3);}
+  .modal-message{font-weight:700;margin-bottom:14px;line-height:1.7;}
+  .modal-input{width:100%;font-size:1.05rem;padding:12px 14px;border-radius:10px;border:1.5px solid #E4D9C2;
+    font-family:inherit;margin-bottom:8px;}
+  .modal-input:focus{outline:none;border-color:var(--mustard-deep);}
+  .modal-error{color:var(--coral);font-size:.85rem;margin-bottom:8px;}
+  .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:8px;}
+  .modal-actions button{font-family:'Zen Kaku Gothic New',sans-serif;font-weight:700;border-radius:10px;padding:10px 18px;cursor:pointer;}
+  .btn-modal-cancel{background:transparent;border:1.5px solid #E4D9C2;color:var(--ink);}
+
+  @media (max-width:520px){.host-top{align-items:center;} .brand-name{font-size:1.1rem;}}
+</style>
+</head>
+<body>
+<script>
+  // ▼▼▼ ここにGASの /exec のURLを貼ってください ▼▼▼
+  window.__API_URL__ = 'ここにGASのウェブアプリURLを貼る';
+  // ▲▲▲ 例：https://script.google.com/macros/s/AKfy...../exec ▲▲▲
+
+  // GitHub Pagesはリダイレクトしないので、教室コードはURLからそのまま読める
+  window.__ROOM__ = new URLSearchParams(location.search).get('room') || '';
+  window.__APP_URL__ = location.origin + location.pathname;
+</script>
+<div id="app">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <div class="brand-name">Word Sniper</div>
+      <div id="room-badge" style="display:none;font-size:.75rem;background:#EFE6D3;color:var(--navy);
+        padding:4px 10px;border-radius:999px;font-weight:700;"></div>
+    </div>
+    <div class="role-switch">
+      <button id="btn-role-host">先生（大画面）</button>
+      <button id="btn-role-player">参加する</button>
+    </div>
+  </div>
+
+  <div id="host-view" class="view">
+    <div class="room-panel">
+      <div class="room-now">この画面の教室：<b id="room-now-code">-</b>
+        <button class="room-forget" id="room-forget-btn">この端末から合言葉を消す</button>
+      </div>
+      <div class="room-warn" id="room-warn">
+        ⚠ 教室コードが付いていません。この状態のURLはすべて同じ部屋（default）に入るので、
+        ほかのクラスと回答が混ざります。<b>全クラスにコード付きURLを配ってください。</b>
+      </div>
+      <div class="room-maker">
+        <input id="room-code-input" type="text" placeholder="クラス名（例：5-1）" maxlength="20">
+        <button id="room-url-btn" class="btn btn-ghost">URLを作る</button>
+      </div>
+      <div class="room-out-row" id="room-out-row" style="display:none;">
+        <input id="room-url-out" type="text" readonly>
+        <button id="room-copy-btn" class="btn btn-primary">コピー</button>
+      </div>
+      <div class="room-copied" id="room-copied">コピーしました</div>
+    </div>
+    <div class="host-top">
+      <div class="host-title">みんなの回答</div>
+      <div class="host-actions">
+        <div class="level-switch">
+          <span class="label">レベル</span>
+          <button id="btn-level-1" data-level="1">やさしい</button>
+          <button id="btn-level-2" data-level="2">ふつう</button>
+        </div>
+        <button id="host-next-btn" class="btn btn-primary">▶ スタート</button>
+        <button id="host-close-btn" class="btn btn-ghost" disabled>🔒 締め切る</button>
+        <button id="host-redraw-btn" class="btn btn-ghost" disabled>🔁 文字をふやす</button>
+        <button id="host-end-btn" class="btn btn-ghost" disabled>🏁 終わる</button>
+        <button id="host-reset-btn" class="btn btn-danger">🔄 リセット</button>
+      </div>
+    </div>
+
+    <div id="host-normal-block">
+      <div class="stage" id="host-stage">
+        <div class="waiting-msg">「▶ スタート」を押して<br>1問目を出そう！</div>
+      </div>
+      <div class="board">
+        <h3>せいかい ランキング</h3>
+        <div id="host-rank-list"><div class="empty-note">まだ回答がありません</div></div>
+        <div id="host-invalid-list"></div>
+        <div id="host-wrong-list"></div>
+      </div>
+      <div class="score-strip" id="host-score-strip"></div>
+    </div>
+
+    <div id="host-final-block" style="display:none;">
+      <div class="final-block">
+        <div class="final-title">🏁 けっかはっぴょう！</div>
+        <div id="host-final-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="player-view" class="view">
+    <div id="name-step" class="name-step">
+      <label>なまえを入力してね</label>
+      <input id="name-input" type="text" maxlength="12" placeholder="例：たろう">
+      <button class="btn btn-primary" id="name-ok-btn" style="width:100%">これで決定</button>
+    </div>
+    <div id="game-step" style="display:none;">
+      <div id="p-body"></div>
+    </div>
+    <div class="footnote">※ 自動で見ているのは「その文字で始まっているか」だけです。<br>つづりやお題に合っているかは、みんなで確かめよう！</div>
+  </div>
+
+  <div id="modal-overlay" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-message" id="modal-message"></div>
+      <input type="text" id="modal-input" class="modal-input" style="display:none;">
+      <div class="modal-error" id="modal-error" style="display:none;"></div>
+      <div class="modal-actions">
+        <button id="modal-cancel" class="btn-modal-cancel">キャンセル</button>
+        <button id="modal-ok" class="btn btn-primary">OK</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+
+  // ---------- サーバー呼び出し（GASへ fetch する） ----------
+  const API_URL = String(window.__API_URL__ || '').trim();
+
+  // 引数の名前。これまでの呼び出し方（配列）を変えずに済ませるための対応表
+  const ARG_NAMES = {
+    checkHostPin:['pin'], getState:['room'], setLevel:['room','level'],
+    startGame:['room'], nextRound:['room'], redrawRound:['room'],
+    setRoundClosed:['room','roundId','closed'], endGame:['room'], resetGame:['room'],
+    submitTap:['room','roundId','sid','name'],
+    submitWord:['room','roundId','sid','name','word','elapsed'],
+    attachAudio:['room','roundId','sid','audio','mime','elapsed'],
+    getAudio:['room','roundId','sid'], judgeAnswer:['room','roundId','sid','verdict']
+  };
+  const HOST_ONLY = ['setLevel','startGame','nextRound','redrawRound','setRoundClosed',
+                     'endGame','resetGame','judgeAnswer','getAudio'];
+  let hostPin = ''; // 合言葉が通ったらここに入る。先生用の操作に付けて送る
+
+  function buildParams(fnName, args){
+    const names = ARG_NAMES[fnName] || [];
+    const p = { fn: fnName };
+    names.forEach((n, i) => { if(args[i] !== undefined && args[i] !== null) p[n] = args[i]; });
+    if(HOST_ONLY.indexOf(fnName) !== -1) p.pin = hostPin;
+    return p;
+  }
+
+  async function callServer(fnName, args){
+    args = args || [];
+    const p = buildParams(fnName, args);
+
+    // 音声は大きいのでPOSTで送る。返事は読まない（届けばよい）
+    if(fnName === 'attachAudio'){
+      await fetch(API_URL, {
+        method:'POST', mode:'no-cors',
+        headers:{ 'Content-Type':'text/plain;charset=utf-8' },
+        body: JSON.stringify(p)
+      });
+      return { ok:true };
+    }
+
+    const res = await fetch(API_URL + '?' + new URLSearchParams(p));
+    const data = await res.json();
+    if(data && data.error === 'bad_pin') throw new Error('合言葉が違います');
+    if(fnName === 'checkHostPin') return !!(data && data.ok);
+    if(fnName === 'getAudio') return (data && data.audio) || '';
+    return data;
+  }
+
+  function uid(){ return 's_' + Math.random().toString(36).slice(2,10) + Date.now().toString(36); }
+  function escapeHTML(s){
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function isGroupCard(card){ return card.display.length > 1; }
+  function cardsHint(cards){ return (cards && cards.length > 1); }
+
+  // ---------- 英語の読み上げ（使えない環境ではボタンを出さない） ----------
+  const canSpeak = (typeof window.speechSynthesis !== 'undefined'
+                    && typeof window.SpeechSynthesisUtterance !== 'undefined');
+  let speakSeq = 0;
+
+  // 子どもが送った言葉をそのまま英語で読む。つづりのまちがいは、音で聞くのが一番わかりやすい
+  function speakWord(word){ speak(String(word).trim()); }
+  function speak(text){
+    if(!canSpeak) return;
+    try{
+      speakSeq++; // お題の読み上げが途中なら、あとに続く文字の発話は取り消す
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'en-US';
+      u.rate = 0.8;
+      window.speechSynthesis.speak(u);
+    }catch(e){ console.warn('speech unavailable', e); }
+  }
+  // 単独の大文字は「略語」と解釈されて別の語に読まれることがあるので、読み方そのものを渡す
+  const LETTER_SOUNDS = {
+    A:'ay', B:'bee', C:'see', D:'dee', E:'ee', F:'eff', G:'jee', H:'aitch', I:'eye',
+    J:'jay', K:'kay', L:'el', M:'em', N:'en', O:'oh', P:'pee', Q:'cue', R:'are',
+    S:'ess', T:'tee', U:'you', V:'vee', W:'double you', X:'ex', Y:'why', Z:'zee'
+  };
+  // お題を読み終えてから、この時間だけ待って文字を読む（長さを変えたいときはここ）
+  const PAUSE_MS = 900;
+
+  // お題 → （間）→ 文字。1文にまとめると混ざるので、必ず別の発話にする
+  function speakRound(round){
+    if(!canSpeak || !round) return;
+    const letters = [];
+    round.cards.forEach(c => c.display.forEach(l => letters.push(LETTER_SOUNDS[l] || l)));
+    const myTurn = ++speakSeq;
+    let done = false;
+
+    function sayLetters(){
+      if(done || myTurn !== speakSeq) return; // 二重再生と、押し直されたときの取り消し
+      done = true;
+      const u = new SpeechSynthesisUtterance(letters.join(', '));
+      u.lang = 'en-US';
+      u.rate = 0.7;
+      window.speechSynthesis.speak(u);
+    }
+
+    try{
+      window.speechSynthesis.cancel();
+      const topic = round.topic.toLowerCase(); // 全部大文字だと頭字語として1文字ずつ読まれることがある
+      const first = new SpeechSynthesisUtterance(topic);
+      first.lang = 'en-US';
+      first.rate = 0.85;
+      first.onend = () => setTimeout(sayLetters, PAUSE_MS);
+      window.speechSynthesis.speak(first);
+      // onend が飛んでこない端末があるので、読み終わるころを見計らった保険もかけておく
+      setTimeout(sayLetters, topic.length * 95 + PAUSE_MS + 400);
+    }catch(e){ console.warn('speech unavailable', e); }
+  }
+
+  // カード1枚分の的（まと）のHTMLを作る。prefix: 'target'（先生）か 'p-target'（参加者）
+  function cardHtml(card, prefix, small){
+    const smallClass = small ? ' small' : '';
+    const badge = `<div class="point-badge">${card.points}点</div>`;
+    if(isGroupCard(card)){
+      // 母音カード：同心円の的だと文字が読みにくいので、単色のピル型にする
+      const inner = card.display.map(l => escapeHTML(l)).join(' ');
+      return `<div class="target-wrap">
+        <div class="${prefix}-pill${smallClass}"><div class="letter-en">${inner}</div></div>
+        ${badge}
+        <div class="group-note">どれでもOK</div>
+      </div>`;
+    }
+    const up = escapeHTML(card.display[0]);
+    const low = escapeHTML(String(card.display[0]).toLowerCase());
+    return `<div class="target-wrap">
+      <div class="${prefix}${smallClass}"><div class="letter-en"><b>${up}</b><i>${low}</i></div></div>
+      ${badge}
+    </div>`;
+  }
+
+  // お題ピル（英語＋日本語）
+  function topicHtml(round, cls){
+    return `<div class="${cls}">
+      <div class="topic-en">${escapeHTML(round.topic)}</div>
+      <div class="topic-ja">${escapeHTML(round.topicJa || '')}</div>
+    </div>`;
+  }
+
+  // ---------- 画面内モーダル ----------
+  const modalOverlay = document.getElementById('modal-overlay');
+  const modalMessage = document.getElementById('modal-message');
+  const modalInput = document.getElementById('modal-input');
+  const modalError = document.getElementById('modal-error');
+  const modalCancelBtn = document.getElementById('modal-cancel');
+  const modalOkBtn = document.getElementById('modal-ok');
+
+  function askPin(message, verifyFn){
+    return new Promise(resolve => {
+      modalMessage.textContent = message;
+      modalInput.style.display = 'block'; modalInput.type = 'text'; modalInput.value = '';
+      modalError.style.display = 'none';
+      modalCancelBtn.style.display = 'inline-block';
+      modalOverlay.classList.add('show');
+      setTimeout(() => modalInput.focus(), 50);
+
+      function cleanup(){
+        modalOverlay.classList.remove('show');
+        modalOkBtn.removeEventListener('click', onOk);
+        modalCancelBtn.removeEventListener('click', onCancel);
+        modalInput.removeEventListener('keydown', onKey);
+      }
+      async function onOk(){
+        modalOkBtn.disabled = true;
+        const ok = await verifyFn(modalInput.value);
+        modalOkBtn.disabled = false;
+        if(ok){ cleanup(); resolve(true); }
+        else {
+          modalError.textContent = '合言葉が違います';
+          modalError.style.display = 'block';
+          modalInput.value = ''; modalInput.focus();
+        }
+      }
+      function onCancel(){ cleanup(); resolve(false); }
+      function onKey(e){ if(e.key === 'Enter') onOk(); if(e.key === 'Escape') onCancel(); }
+      modalOkBtn.addEventListener('click', onOk);
+      modalCancelBtn.addEventListener('click', onCancel);
+      modalInput.addEventListener('keydown', onKey);
+    });
+  }
+  function askConfirm(message){
+    return new Promise(resolve => {
+      modalMessage.textContent = message;
+      modalInput.style.display = 'none'; modalError.style.display = 'none';
+      modalCancelBtn.style.display = 'inline-block';
+      modalOverlay.classList.add('show');
+      function cleanup(){
+        modalOverlay.classList.remove('show');
+        modalOkBtn.removeEventListener('click', onOk);
+        modalCancelBtn.removeEventListener('click', onCancel);
+      }
+      function onOk(){ cleanup(); resolve(true); }
+      function onCancel(){ cleanup(); resolve(false); }
+      modalOkBtn.addEventListener('click', onOk);
+      modalCancelBtn.addEventListener('click', onCancel);
+    });
+  }
+
+  // ---------- ロール切り替え ----------
+  const hostView = document.getElementById('host-view');
+  const playerView = document.getElementById('player-view');
+  const btnRoleHost = document.getElementById('btn-role-host');
+  const btnRolePlayer = document.getElementById('btn-role-player');
+
+  // ---------- 教室コード：doGetが埋め込んだ値を優先し、なければ端末に保存した値、それもなければ既定値 ----------
+  const APP_URL = String(window.__APP_URL__ || '');
+  const ROOM = (() => {
+    const fromServer = String(window.__ROOM__ || '').trim();
+    if (fromServer) { localStorage.setItem('wordsniper_en_room', fromServer); return fromServer; }
+    return localStorage.getItem('wordsniper_en_room') || 'default';
+  })();
+  const NO_ROOM = (ROOM === 'default');
+
+  const roomBadge = document.getElementById('room-badge');
+  if (roomBadge) {
+    roomBadge.style.display = 'inline-block';
+    if (NO_ROOM) {
+      roomBadge.textContent = '⚠ 教室コードなし';
+      roomBadge.style.background = '#FF5D5D';
+      roomBadge.style.color = '#fff';
+    } else {
+      roomBadge.textContent = '教室：' + ROOM;
+    }
+  }
+
+  let currentRole = 'player';
+
+  function setRole(role){
+    currentRole = role;
+    if(role === 'host'){
+      hostView.classList.add('visible'); playerView.classList.remove('visible');
+      btnRoleHost.classList.add('active'); btnRolePlayer.classList.remove('active');
+    } else {
+      playerView.classList.add('visible'); hostView.classList.remove('visible');
+      btnRolePlayer.classList.add('active'); btnRoleHost.classList.remove('active');
+    }
+  }
+  // 合言葉はこの端末におぼえておく。授業中にリロードしても打ち直さなくてよいように。
+  // ただし自動で先生画面にはしない。「先生（大画面）」を押したときだけ入る。
+  const PIN_KEY = 'wordsniper_en_pin';
+
+  btnRoleHost.addEventListener('click', async () => {
+    const saved = localStorage.getItem(PIN_KEY);
+    if(saved){
+      const good = await callServer('checkHostPin', [saved]);
+      if(good){ hostPin = saved; setRole('host'); return; }
+      localStorage.removeItem(PIN_KEY); // 合言葉を変えたときは、おぼえていたものを捨てる
+    }
+    const ok = await askPin('先生用の合言葉を入力してください', async pin => {
+      const good = await callServer('checkHostPin', [pin]);
+      if(good){ hostPin = pin; localStorage.setItem(PIN_KEY, pin); }
+      return good;
+    });
+    if(ok) setRole('host');
+  });
+
+  // 共用のパソコンで使ったときのために、消す手段を残しておく
+  const forgetBtn = document.getElementById('room-forget-btn');
+  if(forgetBtn) forgetBtn.addEventListener('click', () => {
+    localStorage.removeItem(PIN_KEY);
+    hostPin = '';
+    if(!API_URL || API_URL.indexOf('http') !== 0){
+    document.getElementById('app').innerHTML =
+      '<div style="padding:40px 20px;text-align:center;line-height:2;font-weight:700;">' +
+      'このページの先頭にある <code>window.__API_URL__</code> に、<br>' +
+      'GASのウェブアプリURL（.../exec）を貼ってください。</div>';
+    return;
+  }
+
+  setRole('player');
+  });
+  btnRolePlayer.addEventListener('click', () => setRole('player'));
+
+  // ---------- 教室コードのパネル（先生画面） ----------
+  (function initRoomPanel(){
+    const nowCode = document.getElementById('room-now-code');
+    const warn = document.getElementById('room-warn');
+    const codeInput = document.getElementById('room-code-input');
+    const makeBtn = document.getElementById('room-url-btn');
+    const outRow = document.getElementById('room-out-row');
+    const out = document.getElementById('room-url-out');
+    const copyBtn = document.getElementById('room-copy-btn');
+    const copied = document.getElementById('room-copied');
+
+    nowCode.textContent = NO_ROOM ? 'コードなし（default）' : ROOM;
+    if(NO_ROOM) warn.style.display = 'block';
+    if(!NO_ROOM) codeInput.value = ROOM;
+
+    makeBtn.addEventListener('click', () => {
+      const code = codeInput.value.trim();
+      if(!code) { codeInput.focus(); return; }
+      const base = APP_URL || '（デプロイ後のウェブアプリURL）';
+      out.value = base + '?room=' + encodeURIComponent(code);
+      outRow.style.display = 'flex';
+      copied.classList.remove('show');
+    });
+
+    copyBtn.addEventListener('click', () => {
+      out.select();
+      out.setSelectionRange(0, 99999);
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch(e){}
+      if(!ok && navigator.clipboard){
+        navigator.clipboard.writeText(out.value).then(() => copied.classList.add('show')).catch(() => {});
+      }
+      if(ok) copied.classList.add('show');
+    });
+  })();
+
+  // ---------- 共通ポーリング：状態はサーバーが一元管理 ----------
+  let lastState = null;
+
+  async function pollState(){
+    try{
+      const state = await callServer('getState', [ROOM]);
+      lastState = state;
+      if(currentRole === 'host') renderHost(state);
+      else renderPlayer(state);
+    }catch(e){ console.error(e); }
+  }
+  setInterval(pollState, 1300);
+
+  // ================= 先生側の描画 =================
+  const hostNormalBlock = document.getElementById('host-normal-block');
+  const hostFinalBlock = document.getElementById('host-final-block');
+  const hostFinalList = document.getElementById('host-final-list');
+  const hostStage = document.getElementById('host-stage');
+  const hostRankList = document.getElementById('host-rank-list');
+  const hostInvalidList = document.getElementById('host-invalid-list');
+  const hostWrongList = document.getElementById('host-wrong-list');
+  const hostScoreStrip = document.getElementById('host-score-strip');
+  const hostNextBtn = document.getElementById('host-next-btn');
+  const hostCloseBtn = document.getElementById('host-close-btn');
+  const hostRedrawBtn = document.getElementById('host-redraw-btn');
+  const hostEndBtn = document.getElementById('host-end-btn');
+  const hostResetBtn = document.getElementById('host-reset-btn');
+  const btnLevel1 = document.getElementById('btn-level-1');
+  const btnLevel2 = document.getElementById('btn-level-2');
+
+  // 確定済みscoresに、今のラウンドの暫定1位の点数を仮に足したものを作る（表示専用、サーバーには書かない）
+  function computeDisplayScores(state, correctList){
+    const scores = {};
+    Object.keys(state.scores).forEach(sid => { scores[sid] = Object.assign({}, state.scores[sid]); });
+    if(correctList && correctList.length){
+      const leader = correctList[0];
+      const cur = scores[leader.sid] || { name: leader.name, points: 0 };
+      scores[leader.sid] = { name: leader.name, points: (cur.points||0) + (leader.points||0), provisional: true };
+    }
+    return scores;
+  }
+
+  function renderHost(state){
+    const round = state.round;
+
+    btnLevel1.classList.toggle('active', state.level !== 2);
+    btnLevel2.classList.toggle('active', state.level === 2);
+
+    if(round && round.ended){
+      hostNormalBlock.style.display = 'none';
+      hostFinalBlock.style.display = 'block';
+      hostNextBtn.disabled = true; hostCloseBtn.disabled = true; hostRedrawBtn.disabled = true; hostEndBtn.disabled = true;
+      const list = Object.values(state.scores).sort((a,b) => b.points - a.points).slice(0,6);
+      hostFinalList.innerHTML = list.length ? list.map((s,i) => {
+        const rankClass = i===0 ? 'r1' : i===1 ? 'r2' : i===2 ? 'r3' : '';
+        return `<div class="final-row ${rankClass}">
+          <div class="final-badge">${i+1}</div>
+          <div class="final-name">${escapeHTML(s.name)}</div>
+          <div class="final-points">${s.points}点</div>
+        </div>`;
+      }).join('') : '<div class="empty-note">得点がありませんでした</div>';
+      return;
+    }
+
+    hostNormalBlock.style.display = 'block';
+    hostFinalBlock.style.display = 'none';
+
+    hostCloseBtn.disabled = !round;
+    hostCloseBtn.textContent = round && round.closed ? '🔓 締め切りを解除' : '🔒 締め切る';
+    hostRedrawBtn.disabled = !round;
+    hostEndBtn.disabled = !round;
+    hostNextBtn.disabled = false;
+    hostNextBtn.textContent = round ? '次のお題へ ▶' : '▶ スタート';
+
+    if(!round){
+      hostStage.innerHTML = '<div class="waiting-msg">「▶ スタート」を押して<br>1問目を出そう！</div>';
+    } else {
+      const cards = round.cards;
+      let targetHtml;
+      if(cards.length === 1){
+        targetHtml = cardHtml(cards[0], 'target', false);
+      } else {
+        targetHtml = `
+          <div class="letters-hint">この中のどれかで始まればOK</div>
+          <div class="letters-row">${cards.map(c => cardHtml(c, 'target', true)).join('')}</div>`;
+      }
+      const speakHtml = canSpeak ? '<button class="speak-btn" id="host-speak-btn">🔊 きいてみる</button>' : '';
+      hostStage.innerHTML = topicHtml(round, 'topic-pill') + targetHtml + speakHtml;
+      const sb = document.getElementById('host-speak-btn');
+      if(sb) sb.addEventListener('click', () => speakRound(round));
+    }
+
+    // 押した順に並べる。正誤は先生が○×で決める（音声からは機械にはわからない）
+    // 言い終わるのが早かった順。まだ音声が届いていない子は、押した順で後ろに並ぶ
+    const bySpeed = (a,b) => {
+      const ea = (typeof a.elapsed === 'number') ? a.elapsed : null;
+      const eb = (typeof b.elapsed === 'number') ? b.elapsed : null;
+      if(ea !== null && eb !== null) return ea - eb;
+      if(ea !== null) return -1;
+      if(eb !== null) return 1;
+      return a.ts - b.ts;
+    };
+    const entries = Object.entries(state.answers)
+      .map(([sid,a]) => ({sid, ...a}))
+      .sort(bySpeed);
+    const okList = entries.filter(e => e.verdict === 'ok');
+    const unjudged = entries.filter(e => !e.verdict);
+
+    if(entries.length === 0){
+      hostRankList.innerHTML = '<div class="empty-note">まだ回答がありません</div>';
+    } else {
+      const hint = unjudged.length
+        ? `<div class="judge-hint">▶で聞いて、○か×を付けてください（未判定 ${unjudged.length}人)</div>` : '';
+      hostRankList.innerHTML = hint + entries.map((e,i) => {
+        const winner = (okList.length && okList[0].sid === e.sid);
+        const rankClass = winner ? 'r1' : (e.verdict ? '' : 'unjudged');
+        const secs = (typeof e.elapsed === 'number')
+          ? (e.elapsed/1000).toFixed(2) + '秒' : '録音中…';
+        const play = e.hasAudio
+          ? `<button class="rank-action" data-action="play" data-sid="${e.sid}" title="録音を聞く">▶</button>`
+          : (e.word ? '' : '<span class="no-audio">録音まち…</span>');
+        const wordCell = e.word
+          ? `<div class="rank-word">${escapeHTML(e.word)}</div>` : '<div class="rank-word"></div>';
+        return `<div class="rank-row ${rankClass}">
+          <div class="rank-badge">${i+1}</div>
+          <div class="rank-name">${escapeHTML(e.name)}</div>
+          ${wordCell}
+          ${play}
+          <button class="judge-btn ok ${e.verdict==='ok'?'on':''}" data-action="ok" data-sid="${e.sid}">○</button>
+          <button class="judge-btn ng ${e.verdict==='ng'?'on':''}" data-action="ng" data-sid="${e.sid}">×</button>
+          ${winner ? `<div class="rank-points">${round.points}点</div>` : ''}
+          <div class="rank-time">${secs}</div>
+        </div>`;
+      }).join('');
+    }
+    hostInvalidList.innerHTML = '';
+    hostWrongList.innerHTML = '';
+
+    const correct = okList.map(e => ({...e, points: round ? round.points : 0}));
+    const displayScores = computeDisplayScores(state, correct);
+    const scoreList = Object.values(displayScores).sort((a,b) => b.points - a.points).slice(0,6);
+    hostScoreStrip.innerHTML = scoreList.map(s =>
+      `<div class="score-chip${s.provisional ? ' provisional' : ''}">${escapeHTML(s.name)} <b>${s.points}</b></div>`
+    ).join('');
+  }
+
+  // 音声はサーバーから取り出して、その場で鳴らす（ファイルはどこにも残らない）
+  let currentAudio = null;
+  async function playAnswer(sid, mime){
+    if(!lastState.round) return;
+    try{
+      const b64 = await callServer('getAudio', [ROOM, lastState.round.roundId, sid]);
+      if(!b64){ console.warn('音声がありません'); return; }
+      if(currentAudio) currentAudio.pause();
+      currentAudio = new Audio('data:' + (mime || 'audio/webm') + ';base64,' + b64);
+      currentAudio.play().catch(e => console.warn('再生できません', e));
+    }catch(e){ console.error(e); }
+  }
+
+  async function onRankClick(e){
+    const btn = e.target.closest('button[data-action]');
+    if(!btn || !lastState.round) return;
+    const act = btn.dataset.action, sid = btn.dataset.sid;
+    if(act === 'play'){
+      const a = lastState.answers[sid];
+      playAnswer(sid, a && a.mime);
+      return;
+    }
+    if(act === 'ok' || act === 'ng'){
+      const a = lastState.answers[sid];
+      // 同じボタンをもう一度押したら未判定に戻す
+      const next = (a && a.verdict === act) ? null : act;
+      const state = await callServer('judgeAnswer', [ROOM, lastState.round.roundId, sid, next]);
+      lastState = state; renderHost(state);
+    }
+  }
+  document.getElementById('host-rank-list').addEventListener('click', onRankClick);
+
+  [btnLevel1, btnLevel2].forEach(b => {
+    b.addEventListener('click', async () => {
+      const state = await callServer('setLevel', [ROOM, Number(b.dataset.level)]);
+      lastState = state; renderHost(state);
+    });
+  });
+
+  hostNextBtn.addEventListener('click', async () => {
+    const state = lastState && lastState.round ? await callServer('nextRound', [ROOM]) : await callServer('startGame', [ROOM]);
+    lastState = state; renderHost(state);
+  });
+  hostCloseBtn.addEventListener('click', async () => {
+    if(!lastState || !lastState.round) return;
+    const state = await callServer('setRoundClosed', [ROOM, lastState.round.roundId, !lastState.round.closed]);
+    lastState = state; renderHost(state);
+  });
+  hostRedrawBtn.addEventListener('click', async () => {
+    const state = await callServer('redrawRound', [ROOM]);
+    lastState = state; renderHost(state);
+  });
+  hostEndBtn.addEventListener('click', async () => {
+    if(!(await askConfirm('今の問題を締め切って、最終結果を表示します。よろしいですか？'))) return;
+    const state = await callServer('endGame', [ROOM]);
+    lastState = state; renderHost(state);
+  });
+  hostResetBtn.addEventListener('click', async () => {
+    if(!(await askConfirm('スコアと今の問題をリセットします。よろしいですか？'))) return;
+    const state = await callServer('resetGame', [ROOM]);
+    lastState = state; renderHost(state);
+  });
+
+  // ================= 参加者側の描画 =================
+  const nameStep = document.getElementById('name-step');
+  const gameStep = document.getElementById('game-step');
+  const nameInput = document.getElementById('name-input');
+  const nameOkBtn = document.getElementById('name-ok-btn');
+  const pBody = document.getElementById('p-body');
+
+  let myId = localStorage.getItem('wordsniper_en_my_id');
+  let myName = localStorage.getItem('wordsniper_en_my_name');
+  if(myId && myName){
+    nameInput.value = myName;
+    nameStep.style.display = 'none';
+    gameStep.style.display = 'block';
+  }
+
+  nameOkBtn.addEventListener('click', () => {
+    const v = nameInput.value.trim();
+    if(!v){ nameInput.focus(); return; }
+    myName = v.slice(0,12);
+    myId = myId || uid();
+    localStorage.setItem('wordsniper_en_my_id', myId);
+    localStorage.setItem('wordsniper_en_my_name', myName);
+    nameStep.style.display = 'none';
+    gameStep.style.display = 'block';
+    pBody.innerHTML = '<div class="p-waiting">マイクのじゅんびちゅう…</div>';
+    prepareMic().then(() => { formRenderedKey = null; pollState(); });
+  });
+
+  let seenRoundId = undefined;
+  let mySubmitted = false;
+  let formRenderedKey = null; // 「ラウンドID:状態」の組み合わせを描画済みか
+
+  function renderPlayer(state){
+    if(!myId) return; // まだなまえ入力前
+    const round = state.round;
+    const newId = round ? round.roundId : null;
+    if(newId !== seenRoundId){
+      seenRoundId = newId;
+      mySubmitted = false;
+      formRenderedKey = null;
+    } else if(round){
+      mySubmitted = !!(state.answers[myId]);
+    }
+
+    if(round && round.ended){
+      if(formRenderedKey !== 'ended'){
+        pBody.innerHTML = '<div class="p-waiting">🏁 今日のワードスナイパーは<br>これでおしまい！<br>おつかれさま！</div>';
+        formRenderedKey = 'ended';
+      }
+      return;
+    }
+    if(!round){
+      if(formRenderedKey !== 'none'){
+        pBody.innerHTML = '<div class="p-waiting">先生が問題を出すのを<br>まっているよ…</div>';
+        formRenderedKey = 'none';
+      }
+      return;
+    }
+    if(!mySubmitted){
+      const key = newId + ':' + (round.closed ? 'closed' : 'open');
+      if(formRenderedKey !== key){
+        if(round.closed){
+          pBody.innerHTML = '<div class="p-waiting">この問題は締め切られたよ。<br>結果を見てね…</div>';
+        } else {
+          renderPlayerForm(round);
+        }
+        formRenderedKey = key;
+      }
+      // すでに同じ状態を描画済みなら、入力中の文字を消さないようDOMには触れない
+    } else {
+      renderPlayerStatus(round, state.answers);
+    }
+  }
+
+  // ---------- 録音まわり ----------
+  const MAX_REC_MS = 5000; // 録音は5秒で自動的に止まる
+  let micStream = null, micReady = false, micChecked = false, micError = '';
+  let recorder = null, recTimer = null;
+
+  // 失敗の理由を、先生が読んでわかる言葉にする
+  function micErrorText(err){
+    const n = (err && err.name) || String(err || '');
+    if(n === 'NotAllowedError')  return 'ブラウザがマイクを許可していません（iframeの制限か、許可を「ブロック」にしている）';
+    if(n === 'NotFoundError')    return 'マイクが見つかりません（端末にマイクがない／無効）';
+    if(n === 'NotReadableError') return 'ほかのアプリがマイクを使っています';
+    if(n === 'SecurityError')    return '安全な接続（https）ではないため使えません';
+    if(String(err).indexOf('APIなし') >= 0) return 'このブラウザに録音の機能がありません';
+    if(String(err).indexOf('MediaRecorder') >= 0) return 'このブラウザは録音に対応していません';
+    return String(n || '原因不明');
+  }
+
+  function pickMime(){
+    if(typeof MediaRecorder === 'undefined') return '';
+    const cands = ['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg;codecs=opus'];
+    for(const m of cands){ if(MediaRecorder.isTypeSupported(m)) return m; }
+    return '';
+  }
+
+  // マイクの許可は、名前を入れた直後にとっておく（勝負の途中で許可ダイアログを出さないため）
+  async function prepareMic(force){
+    if(micChecked && !force) return micReady;
+    micChecked = true;
+    micError = '';
+    try{
+      if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error('APIなし');
+      if(typeof MediaRecorder === 'undefined') throw new Error('MediaRecorderなし');
+      micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      micReady = true;
+    }catch(err){
+      console.warn('マイクが使えません → 文字入力に切りかえます', err);
+      micError = micErrorText(err);
+      micReady = false;
+    }
+    return micReady;
+  }
+
+  function blobToBase64(blob){
+    return new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = () => res(String(r.result).split(',')[1]);
+      r.onerror = () => rej(new Error('読み取り失敗'));
+      r.readAsDataURL(blob);
+    });
+  }
+
+  let roundSeenAt = 0; // カードがこの端末に出た瞬間。ここから言い終わるまでを測る
+
+  function renderPlayerForm(round){
+    roundSeenAt = Date.now();
+    const cards = round.cards;
+    const targetsHtml = cards.length === 1
+      ? cardHtml(cards[0], 'p-target', false)
+      : cards.map(c => cardHtml(c, 'p-target', true)).join('');
+    const hintHtml = cardsHint(cards) ? '<div class="letters-hint">どれかで始まればOK</div>' : '';
+    const speakHtml = canSpeak ? '<button class="p-speak-btn" id="p-speak-btn">🔊 きいてみる</button>' : '';
+
+    const answerHtml = micReady
+      ? `<button class="mic-btn" id="mic-btn"><span class="icon">🎤</span>おして<br>えいごで<br>いおう</button>
+         <div class="mic-note">ボタンをおしたしゅんかんの<br>はやさで じゅんいが きまるよ</div>`
+      : `<div class="mic-fallback">このたんまつでは マイクが つかえません。<br>ことばを かいておくってね。
+           <div class="mic-reason">理由：${escapeHTML(micError || '不明')}</div>
+           <button class="mic-retry" id="mic-retry-btn">マイクを もういちど ためす</button>
+         </div>
+         <div class="p-input-row">
+           <input id="word-input" type="text" placeholder="例：dog" maxlength="24"
+                  autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false">
+           <button class="p-submit" id="word-submit-btn">送信</button>
+         </div>
+         <div class="p-kanji-warning" id="kanji-warn">⚠️ 英語（アルファベット）で書いてね</div>`;
+
+    pBody.innerHTML = `
+      <div style="text-align:center;">${topicHtml(round, 'p-topic')}</div>
+      ${hintHtml}
+      <div class="p-target-wrap ${cards.length>1?'p-letters-row':''}">${targetsHtml}</div>
+      ${speakHtml}
+      ${answerHtml}
+    `;
+    const psb = document.getElementById('p-speak-btn');
+    if(psb) psb.addEventListener('click', () => speakRound(round));
+
+    if(micReady){
+      wireMicButton(round);
+    } else {
+      wireTextInput(round);
+      const retry = document.getElementById('mic-retry-btn');
+      if(retry) retry.addEventListener('click', async () => {
+        retry.disabled = true;
+        retry.textContent = 'ためしています…';
+        await prepareMic(true);
+        formRenderedKey = null; // 画面を組み直す
+        pollState();
+      });
+    }
+  }
+
+  function wireMicButton(round){
+    const btn = document.getElementById('mic-btn');
+    let recording = false;
+
+    async function stopAndSend(){
+      if(!recording) return;
+      recording = false;
+      clearTimeout(recTimer);
+      try{ recorder.stop(); }catch(e){}
+    }
+
+    btn.addEventListener('click', async () => {
+      if(recording){ stopAndSend(); return; }
+
+      // ① まず「押した」ことだけを送る。順位はこの瞬間で決まる
+      mySubmitted = true;
+      btn.classList.add('recording');
+      btn.innerHTML = '<span class="icon">■</span>いいおわったら<br>おす';
+      recording = true;
+      callServer('submitTap', [ROOM, round.roundId, myId, myName])
+        .then(state => { lastState = state; });
+
+      // ② そのあとで録音して、あとから音声だけ届ける
+      try{
+        const mime = pickMime();
+        const chunks = [];
+        recorder = new MediaRecorder(micStream, mime
+          ? { mimeType: mime, audioBitsPerSecond: 16000 } : { audioBitsPerSecond: 16000 });
+        recorder.ondataavailable = ev => { if(ev.data && ev.data.size) chunks.push(ev.data); };
+        recorder.onstop = async () => {
+          // 順位はこの瞬間で決まる。通信の前に、端末の中で時間を確定させる
+          const elapsed = Date.now() - roundSeenAt;
+          btn.classList.remove('recording');
+          btn.disabled = true;
+          btn.innerHTML = '<span class="icon">✓</span>おくったよ';
+          try{
+            const blob = new Blob(chunks, { type: recorder.mimeType || mime || 'audio/webm' });
+            const b64 = await blobToBase64(blob);
+            await callServer('attachAudio',
+              [ROOM, round.roundId, myId, b64, recorder.mimeType || mime || 'audio/webm', elapsed]);
+          }catch(e){ console.error('音声を送れませんでした', e); }
+          pollState();
+        };
+        recorder.start();
+        recTimer = setTimeout(stopAndSend, MAX_REC_MS); // 言い終わらなくても5秒で止める
+      }catch(e){
+        console.error('録音できませんでした', e);
+        btn.classList.remove('recording');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="icon">✓</span>おくったよ';
+      }
+    });
+  }
+
+  function wireTextInput(round){
+    const inp = document.getElementById('word-input');
+    const btn = document.getElementById('word-submit-btn');
+    const warn = document.getElementById('kanji-warn');
+    inp.addEventListener('input', () => {
+      const isJa = /[\u3040-\u30FF\u3400-\u4DBF\u4E00-\u9FFF]/.test(inp.value);
+      warn.classList.toggle('show', isJa);
+    });
+    const doSubmit = async () => {
+      const word = inp.value.trim();
+      if(!word) return;
+      btn.disabled = true;
+      mySubmitted = true;
+      const elapsed = Date.now() - roundSeenAt;
+      const state = await callServer('submitWord', [ROOM, round.roundId, myId, myName, word, elapsed]);
+      lastState = state;
+      renderPlayer(state);
+    };
+    btn.addEventListener('click', doSubmit);
+    inp.addEventListener('keydown', e => { if(e.key === 'Enter') doSubmit(); });
+    inp.focus();
+  }
+
+  function renderPlayerStatus(round, answers){
+    const mine = answers[myId];
+    if(!mine) return;
+    const order = Object.entries(answers).sort((a,b) => a[1].ts - b[1].ts);
+    const myPos = order.findIndex(([sid]) => sid === myId) + 1;
+    const wordLine = mine.word ? `<div class="status-word"><em>${escapeHTML(mine.word)}</em> でおくったよ</div>` : '';
+
+    if(mine.verdict === 'ok'){
+      const okOrder = order.filter(([,a]) => a.verdict === 'ok');
+      const isTop = okOrder.length && okOrder[0][0] === myId;
+      pBody.innerHTML = `
+        <div class="status-card correct">
+          ${wordLine}
+          <div class="status-rank">${isTop ? '1位！' : '○ せいかい'}</div>
+          <div class="status-sub">${isTop ? round.points + '点 ゲット！' : 'せんせいが ○ をつけたよ'}</div>
+        </div>
+        <div class="p-waiting" style="padding-top:20px;">次のお題を待っているよ…</div>`;
+    } else if(mine.verdict === 'ng'){
+      pBody.innerHTML = `
+        <div class="status-card wrong">
+          ${wordLine}
+          <div class="status-sub">ざんねん、こんどは べつのことばで！</div>
+        </div>
+        <div class="p-waiting" style="padding-top:20px;">次のお題を待っているよ…</div>`;
+    } else {
+      pBody.innerHTML = `
+        <div class="status-card invalid">
+          ${wordLine}
+          <div class="status-rank">${myPos}ばんめ</div>
+          <div class="status-sub">${mine.hasAudio ? 'おくったよ！せんせいが きいているよ…' : 'こえを おくっているよ…'}</div>
+        </div>
+        <div class="p-waiting" style="padding-top:20px;">けっかを まってね…</div>`;
+    }
+  }
+
+  // ================= BOOT =================
+  setRole('player');
+  if(myId && myName) prepareMic().then(() => pollState());
+  else pollState();
+
+})();
+</script>
+</body>
+</html>
