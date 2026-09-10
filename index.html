@@ -250,7 +250,7 @@
 <body>
 <script>
   // ▼▼▼ ここにGASの /exec のURLを貼ってください ▼▼▼
-  window.__API_URL__ = 'https://script.google.com/a/macros/manabi.takatsuki-osk.ed.jp/s/AKfycbybZ_4oQ3foSf31QrmoJ2O0LJv4Prj-VKoknmyLIJq2JNsEmgUXuvrXmdlE11EVfZt8_Q/exec';
+  window.__API_URL__ = 'ここにGASのウェブアプリURLを貼る';
   // ▲▲▲ 例：https://script.google.com/macros/s/AKfy...../exec ▲▲▲
 
   // GitHub Pagesはリダイレクトしないので、教室コードはURLからそのまま読める
@@ -357,51 +357,61 @@
 <script>
 (function(){
 
-  // ---------- サーバー呼び出し（GASへ fetch する） ----------
+  // ---------- サーバー呼び出し（GASの中継ページ経由） ----------
+  //
+  // 組織限定のGASは、外部サイトからfetchで呼ぶとCORSで拒否される。
+  // そこでGASの中継ページを見えないiframeとして読み込み、そこに処理を頼む。
+  // 中継ページはGAS自身のページなので google.script.run が使え、認証も通る。
   const API_URL = String(window.__API_URL__ || '').trim();
 
-  // 引数の名前。これまでの呼び出し方（配列）を変えずに済ませるための対応表
-  const ARG_NAMES = {
-    checkHostPin:['pin'], getState:['room'], setLevel:['room','level'],
-    startGame:['room'], nextRound:['room'], redrawRound:['room'],
-    setRoundClosed:['room','roundId','closed'], endGame:['room'], resetGame:['room'],
-    submitTap:['room','roundId','sid','name'],
-    submitWord:['room','roundId','sid','name','word','elapsed'],
-    attachAudio:['room','roundId','sid','audio','mime','elapsed'],
-    getAudio:['room','roundId','sid'], judgeAnswer:['room','roundId','sid','verdict']
-  };
-  const HOST_ONLY = ['setLevel','startGame','nextRound','redrawRound','setRoundClosed',
-                     'endGame','resetGame','judgeAnswer','getAudio'];
-  let hostPin = ''; // 合言葉が通ったらここに入る。先生用の操作に付けて送る
+  let hostPin = ''; // 先生が打った合言葉。この端末の中だけに持つ
+  let bridgeWin = null, bridgeReady = false;
+  const bridgeOrigin = (() => { try { return new URL(API_URL).origin; } catch(e){ return '*'; } })();
+  const pending = new Map();
+  let msgId = 0;
 
-  function buildParams(fnName, args){
-    const names = ARG_NAMES[fnName] || [];
-    const p = { fn: fnName };
-    names.forEach((n, i) => { if(args[i] !== undefined && args[i] !== null) p[n] = args[i]; });
-    if(HOST_ONLY.indexOf(fnName) !== -1) p.pin = hostPin;
-    return p;
+  (function makeBridge(){
+    if(!API_URL || API_URL.indexOf('http') !== 0) return;
+    const f = document.createElement('iframe');
+    f.style.cssText = 'position:absolute;width:0;height:0;border:0;visibility:hidden;';
+    f.src = API_URL + (API_URL.indexOf('?') >= 0 ? '&' : '?') + 'mode=bridge';
+    document.body.appendChild(f);
+    bridgeWin = f;
+  })();
+
+  window.addEventListener('message', ev => {
+    const m = ev.data;
+    if(!m || !m.__ws) return;
+    if(m.ready){ bridgeReady = true; return; }
+    const p = pending.get(m.id);
+    if(!p) return;
+    pending.delete(m.id);
+    if(m.ok) p.resolve(m.payload);
+    else p.reject(new Error(String(m.payload)));
+  });
+
+  function waitBridge(){
+    if(bridgeReady) return Promise.resolve(true);
+    return new Promise((res, rej) => {
+      const t0 = Date.now();
+      const iv = setInterval(() => {
+        if(bridgeReady){ clearInterval(iv); res(true); }
+        else if(Date.now() - t0 > 15000){ clearInterval(iv); rej(new Error('中継ページにつながりません')); }
+      }, 120);
+    });
   }
 
   async function callServer(fnName, args){
-    args = args || [];
-    const p = buildParams(fnName, args);
-
-    // 音声は大きいのでPOSTで送る。返事は読まない（届けばよい）
-    if(fnName === 'attachAudio'){
-      await fetch(API_URL, {
-        method:'POST', mode:'no-cors',
-        headers:{ 'Content-Type':'text/plain;charset=utf-8' },
-        body: JSON.stringify(p)
-      });
-      return { ok:true };
-    }
-
-    const res = await fetch(API_URL + '?' + new URLSearchParams(p));
-    const data = await res.json();
-    if(data && data.error === 'bad_pin') throw new Error('合言葉が違います');
-    if(fnName === 'checkHostPin') return !!(data && data.ok);
-    if(fnName === 'getAudio') return (data && data.audio) || '';
-    return data;
+    await waitBridge();
+    const id = ++msgId;
+    return new Promise((resolve, reject) => {
+      pending.set(id, { resolve, reject });
+      setTimeout(() => {
+        if(pending.has(id)){ pending.delete(id); reject(new Error('応答がありません')); }
+      }, 20000);
+      bridgeWin.contentWindow.postMessage(
+        { __ws:true, id:id, fn:fnName, args: args || [] }, bridgeOrigin);
+    });
   }
 
   function uid(){ return 's_' + Math.random().toString(36).slice(2,10) + Date.now().toString(36); }
